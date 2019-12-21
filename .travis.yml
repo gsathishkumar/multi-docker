@@ -1,0 +1,23 @@
+#sudo: required
+language: generic
+services:
+    - docker
+
+before_install:
+    - docker build -t sathish1983/multi-docker-client-test -f ./client/Dockerfile.dev ./client
+
+script:
+    - docker run -e CI=true sathish1983/multi-docker-client-test npm run test
+
+after_success:
+    - docker build -t sathish1983/multi-docker-client ./client
+    - docker build -t sathish1983/multi-docker-nginx ./nginx
+    - docker build -t sathish1983/multi-docker-server ./server
+    - docker build -t sathish1983/multi-docker-worker ./worker
+    # Login to the Docker CLI
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    # Push the images to docker hub
+    - docker push sathish1983/multi-docker-client
+    - docker push sathish1983/multi-docker-nginx
+    - docker push sathish1983/multi-docker-server
+    - docker push sathish1983/multi-docker-worker
